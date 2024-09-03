@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    sadas
+  </body>
+  <script>
+    const processHTML = (htmlString) => {
+      const container = document.createElement("div");
+      container.innerHTML = htmlString;
+
+      const multiplier = 2;
+
+      const fontSizeConverter = {
+        "font-size: 14px": 14 * multiplier,
+        "font-size: 18px": 18 * multiplier,
+        "font-size: 24px": 24 * multiplier,
+        "font-size: 48px": 48 * multiplier,
+      };
+
+      const processChildren = (children) => {
+        Array.from(children).forEach((child) => {
+          const fontSize = child
+            .getAttribute("style")
+            .split(";")
+            .map((t) => t.trim())
+            .filter((t) => t)
+            .find((t) => Object.keys(fontSizeConverter).includes(t));
+
+          if (fontSize) {
+            child.style.fontSize = `${fontSizeConverter[fontSize]}px`;
+          } else {
+            child.style.fontSize = `${fontSizeConverter["font-size: 14px"]}px`;
+          }
+
+          if (child.children.length) {
+            processChildren(child.children);
+          }
+        });
+      };
+
+      processChildren(container.children);
+
+      return container.innerHTML;
+    };
+
+    (() => {
+      processHTML(`
+    <p style="font-size: 14px; color: red;">This is the initial content of the editor.</p>
+    <p style="font-size: 14px;"><span style="font-size: 18px;">This is the initial content of the editor.</span></p>
+    <p style="font-size: 14px;"><span style="font-size: 48px;">This is the initial content of the editor.</span></p>
+    <p style="font-size: 14px;"><span style="font-size: 24px;">This is the initial content of the editor.</span></p>`);
+    })();
+  </script>
+</html>

@@ -1,0 +1,14 @@
+.inputContainer {
+  @apply flex flex-col w-full border rounded-lg !min-w-[auto] h-12 cursor-text;
+
+  background: var(--input-background);
+  border-color: var(--input-border-color);
+}
+
+.inputLabel {
+  @apply text-[0.6rem] opacity-80 ml-1 mt-1;
+}
+
+.input {
+  @apply w-full h-full bg-transparent outline-none text-sm px-2;
+}
