@@ -7,6 +7,7 @@ import Button from "@/shared/components/Button";
 import { PdfType } from "@/shared/types/pdf.type";
 import { MailerSendResponse } from "@/shared/types/mailerSens.type";
 import CountdownTimer from "@/shared/components/ContdownTimer";
+import Input from "@/shared/components/Input";
 
 const BULK_INTERVAL_SECONDS = 2;
 const BULK_SIZE = 40;
@@ -18,6 +19,14 @@ const SenEmails: React.FC = () => {
   const [bulkIds, setBulkIds] = useState<string[]>([]);
   const [sendingBulk, setSendingBulk] = useState<boolean>(false);
   const [currentBulkIndex, setCurrentBulkIndex] = useState<number>(0);
+  const [emailReplyTo, setEmailReplyTo] = useState<string>("");
+  const [nameReplyTo, setNameReplyTo] = useState<string>("");
+  const [subject, setSubject] = useState<string>(
+    "CONARH 24 - Certificado de Participação."
+  );
+  const [message, setMessage] = useState<string>(
+    "Olá, segue em anexo seu Certificado!"
+  );
 
   const handleFileChange = async (event: any) => {
     const files = event.target.files;
@@ -75,7 +84,7 @@ const SenEmails: React.FC = () => {
       setCurrentBulkIndex(index);
       setSendingBulk(true);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_ROOT}/api/email`,
+        `${process.env.NEXT_PUBLIC_ROOT}/api/email?emailReplyTo=${emailReplyTo}&nameReplyTo=${nameReplyTo}&subject=${subject}&message=${message}`,
         {
           method: "POST",
           headers: {
@@ -149,6 +158,30 @@ const SenEmails: React.FC = () => {
           <h1>Importar Arquivos ZIP com PDFs</h1>
           <input type="file" multiple onChange={handleFileChange} />
           <h2>PDFs Encontrados: {pdfFiles.length}</h2>
+          <Input
+            className="max-w-96"
+            label={"Email de Resposta"}
+            value={emailReplyTo}
+            onChange={(e) => setEmailReplyTo(e.target.value)}
+          />
+          <Input
+            className="max-w-96"
+            label={"Nome de Resposta"}
+            value={nameReplyTo}
+            onChange={(e) => setNameReplyTo(e.target.value)}
+          />
+          <Input
+            className="max-w-96"
+            label={"Assunto"}
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          />
+          <Input
+            className="max-w-96"
+            label={"Mensagem"}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
           <Button onClick={sendAllPdfs}>Enviar PDFs</Button>
           <ul>
             {bulkIds.map((id) => (

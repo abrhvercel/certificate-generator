@@ -16,6 +16,11 @@ export async function POST(req: NextRequest) {
 
   // return NextResponse.json(await response.json());
 
+  const emailReplyTo = await req.nextUrl.searchParams.get("emailReplyTo");
+  const nameReplyTo = await req.nextUrl.searchParams.get("nameReplyTo");
+  const subject = await req.nextUrl.searchParams.get("subject");
+  const message = await req.nextUrl.searchParams.get("message");
+
   const data: PdfType[] = await req.json();
 
   let emailBody: Object[] = [];
@@ -23,10 +28,10 @@ export async function POST(req: NextRequest) {
   data.forEach((pdf) => {
     // const emailTo = "pedro.phdois@gmail.com";
     const emailTo = pdf.filename.replace(".pdf", "");
-    emailBody.push({
+    const pdfBody: any = {
       from: {
-        email: "MS_RISCe9@gayubas.com",
-        name: "MailerSend",
+        email: process.env.MAILERSEND_EMAIL,
+        name: process.env.MAILERSEND_NAME,
       },
       to: [
         {
@@ -34,8 +39,8 @@ export async function POST(req: NextRequest) {
           name: emailTo,
         },
       ],
-      subject: "CONARH 24 - Certificado de Participação.",
-      text: `Olá, segue em anexo seu Certificado!`,
+      subject: subject,
+      text: message,
       attachments: [
         {
           filename: `${emailTo}.pdf`,
@@ -43,14 +48,21 @@ export async function POST(req: NextRequest) {
           type: "application/pdf",
         },
       ],
-    });
+    };
+
+    if (emailReplyTo && nameReplyTo) {
+      pdfBody.reply_to = {
+        email: emailReplyTo,
+        name: nameReplyTo,
+      };
+    }
+    emailBody.push(pdfBody);
   });
 
   const response = await fetch(`https://api.mailersend.com/v1/bulk-email`, {
     method: "POST",
     headers: {
-      Authorization:
-        "Bearer mlsn.68e2b8ba1e1136abc20702627c5bba93bebe676c4d4481b634b304f57b18d716",
+      Authorization: `Bearer ${process.env.MAILERSEND_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(emailBody),
