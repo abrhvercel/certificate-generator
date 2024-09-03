@@ -11,7 +11,7 @@ import CountdownTimer from "@/shared/components/ContdownTimer";
 const BULK_INTERVAL_SECONDS = 2;
 const BULK_SIZE = 40;
 
-const Generator: React.FC = () => {
+const SenEmails: React.FC = () => {
   const [pdfFiles, setPdfFiles] = useState<PdfType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [resetCounterKey, setResetCounterKey] = useState<number>(0);
@@ -161,4 +161,4 @@ const Generator: React.FC = () => {
   );
 };
 
-export default Generator;
+export default SenEmails;

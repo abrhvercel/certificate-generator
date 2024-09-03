@@ -4,17 +4,31 @@ import Button from "@/shared/components/Button";
 import Input from "@/shared/components/Input";
 import React, { useEffect, useRef, useState } from "react";
 import Editor from "@/shared/components/Editor";
-import { imageOnCanvas, textOnCanvas } from "@/shared/utils/canvas";
-import {
-  downloadFile,
-  generateZipWithPDFs,
-  readSheet,
-} from "@/shared/utils/file";
+import { generateZipWithPDFs, readSheet } from "@/shared/utils/file";
 import { processHTML } from "@/shared/utils/html";
 import { PersonType } from "@/shared/types/person.type";
 import { sheetToPeople } from "@/shared/utils/person";
-import { getPdfs } from "@/shared/utils/certificate";
 import { createPortal } from "react-dom";
+import { Image as ImageJS } from "image-js";
+import { jsPDF } from "jspdf";
+import dynamic from "next/dynamic";
+
+// import rasterizeHTML from "rasterizehtml";
+
+const useRasterizeHTML = () => {
+  const [rasterizeHTML, setRasterizeHTML] = useState<any>(null);
+
+  useEffect(() => {
+    const loadRasterizeHTML = async () => {
+      const _module = await import("rasterizehtml");
+      setRasterizeHTML(_module);
+    };
+
+    loadRasterizeHTML();
+  }, []);
+
+  return rasterizeHTML;
+};
 
 const Generator: React.FC = () => {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -27,6 +41,7 @@ const Generator: React.FC = () => {
   const [people, setPeople] = useState<PersonType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentSlice, setCurrentSlice] = useState<number>(0);
+  const rasterizeHTML = useRasterizeHTML();
 
   // useEffect(() => {
   //   fetch("cert.jpg")
@@ -49,6 +64,69 @@ const Generator: React.FC = () => {
       );
     }
   }, [originalImage]);
+
+  const imageOnCanvas = async (
+    _image: HTMLImageElement,
+    canvas: HTMLCanvasElement,
+    base64: string
+  ) => {
+    let image = await ImageJS.load(base64);
+
+    if (image.width > 1920) {
+      image = image.resize({ width: 1920 });
+    }
+
+    const imageCanvas = image.getCanvas();
+
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        // Redimensionar canvas para o tamanho da imagem
+        canvas.width = imageCanvas.width;
+        canvas.height = imageCanvas.height;
+        // Desenhar a imagem no canvas
+        ctx.drawImage(imageCanvas, 0, 0);
+      }
+    }
+
+    return true;
+  };
+
+  const textOnCanvas = (
+    image: HTMLImageElement,
+    canvas: HTMLCanvasElement,
+    base64: string,
+    html: string
+  ) => {
+    return new Promise((resolve) => {
+      const fullHtml = `
+        <div
+          style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: ${canvas.height}px;
+          "
+        >
+          <div style="width: 80%; height: 45%; font-family: Arial, Helvetica, sans-serif;">
+            ${html}
+          </div>
+        </div>
+      `;
+
+      imageOnCanvas(image, canvas, base64).then(() => {
+        if (typeof window === "undefined") {
+          // Se não estiver no cliente, não executar a função
+          return resolve(false);
+        } else {
+          rasterizeHTML.drawHTML(fullHtml, canvas, {}).then(() => {
+            resolve(true);
+          });
+        }
+      });
+    });
+  };
 
   const processCertificates = async (sliceCurrent: number) => {
     const sliceSize = 100;
@@ -79,12 +157,58 @@ const Generator: React.FC = () => {
     }
   };
 
+  const getPdfs = async (
+    html: string,
+    base64: string,
+    people: PersonType[],
+    multiplier: number
+  ) => {
+    const pdfFiles: Blob[] = [];
+
+    console.log(people.length);
+    const canvas = document.createElement("canvas");
+
+    for (let i = 0; i < people.length; i++) {
+      const person = people[i];
+      const image = new Image();
+
+      console.log("\n\nPESSOA ----> ", person.name);
+      await imageOnCanvas(image, canvas, base64);
+      console.log("ADICIONOU IMAGEM NO CANVAS");
+      await textOnCanvas(
+        image,
+        canvas,
+        base64,
+        processHTML(html.replace(/{{NOME}}/g, person.name), multiplier)
+      );
+      console.log("ADICIONOU TEXTO NO CANVAS");
+
+      const pdf = new jsPDF(
+        "landscape",
+        "px",
+        [canvas.width, canvas.height],
+        true
+      );
+
+      console.log("CRIOU PDF");
+      const imgData = canvas.toDataURL("image/png");
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+      console.log("ADICIONOU IMAGEM NO PDF");
+      // const pdfBase64 = await blobToBase64(pdf.output("blob"));
+      console.log("CONVERTEU PDF PRA BASE64");
+      pdfFiles.push(pdf.output("blob"));
+      console.log("ADICIONOU NO ARRAY");
+    }
+
+    return pdfFiles;
+  };
+
   const sendCertificates = async () => {
     setCurrentSlice(0);
     setLoading(true);
     setTimeout(() => {
       console.log(new Date());
-      processCertificates(0);
+      // processCertificates(0);
     }, 10);
   };
 

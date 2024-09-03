@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import React from "react";
 
-const Generator: React.FC = () => {
+const System: React.FC = () => {
   const navigator = useRouter();
 
   return (
@@ -31,4 +31,4 @@ const Generator: React.FC = () => {
   );
 };
 
-export default Generator;
+export default System;
