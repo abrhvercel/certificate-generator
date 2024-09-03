@@ -203,12 +203,12 @@ const Generator: React.FC = () => {
     return pdfFiles;
   };
 
-  const sendCertificates = async () => {
+  const generatePDFs = async () => {
     setCurrentSlice(0);
     setLoading(true);
     setTimeout(() => {
       console.log(new Date());
-      // processCertificates(0);
+      processCertificates(0);
     }, 10);
   };
 
@@ -296,7 +296,7 @@ const Generator: React.FC = () => {
                   <Button
                     className="w-full"
                     onClick={() => {
-                      sendCertificates();
+                      generatePDFs();
                     }}
                   >
                     Gerar PDFs
