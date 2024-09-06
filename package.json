@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tinymce/tinymce-react": "^5.1.1",
+    "fetch-to-curl": "^0.6.0",
     "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",
     "image-js": "^0.35.6",

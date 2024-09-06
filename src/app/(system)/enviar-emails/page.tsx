@@ -95,7 +95,11 @@ const SenEmails: React.FC = () => {
       );
 
       const data: MailerSendResponse = await response.json();
-      statusArray.push(data.bulk_email_id);
+      if (data.bulk_email_id) {
+        statusArray.push(data.bulk_email_id);
+      } else if (data.message) {
+        statusArray.push(data.message);
+      }
     } catch (error) {
       statusArray.push(`Erro ao enviar o PDF`);
     } finally {
