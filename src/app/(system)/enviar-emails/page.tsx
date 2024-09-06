@@ -10,7 +10,7 @@ import CountdownTimer from "@/shared/components/ContdownTimer";
 import Input from "@/shared/components/Input";
 
 const BULK_INTERVAL_SECONDS = 2;
-const BULK_SIZE = 40;
+const BULK_SIZE = 20;
 
 const SenEmails: React.FC = () => {
   const [pdfFiles, setPdfFiles] = useState<PdfType[]>([]);

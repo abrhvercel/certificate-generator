@@ -172,7 +172,8 @@ const Generator: React.FC = () => {
       const person = people[i];
       const image = new Image();
 
-      console.log("\n\nPESSOA ----> ", person.name);
+      console.log("\n\nID ----> ", i+1);
+      console.log("PESSOA ----> ", person.name);
       await imageOnCanvas(image, canvas, base64);
       console.log("ADICIONOU IMAGEM NO CANVAS");
       await textOnCanvas(
