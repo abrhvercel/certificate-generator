@@ -9,7 +9,7 @@ import { MailerSendResponse } from "@/shared/types/mailerSens.type";
 import CountdownTimer from "@/shared/components/ContdownTimer";
 import Input from "@/shared/components/Input";
 
-const BULK_INTERVAL_SECONDS = 30;
+const BULK_INTERVAL_SECONDS = 60;
 const BULK_SIZE = 20;
 
 const SenEmails: React.FC = () => {
